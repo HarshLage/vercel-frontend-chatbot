@@ -10,6 +10,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Replace with your actual Render backend URL
+  const BACKEND_URL = "https://backend-chatbot-9cp9.onrender.com/";
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -24,19 +27,22 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const res = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userEntry.text }),
       });
 
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      
       const data = await res.json();
       const botEntry = { role: 'bot', text: data.reply };
       setChatHistory((prev) => [...prev, botEntry]);
     } catch (err) {
+      console.error("API Error:", err);
       setChatHistory((prev) => [...prev, { 
         role: 'bot', 
-        text: '⚠️ Sorry, I encountered an error. Please try again later.' 
+        text: '⚠️ Failed to connect to the server. Please try again later.' 
       }]);
     } finally {
       setLoading(false);
